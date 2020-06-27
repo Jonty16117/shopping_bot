@@ -27,12 +27,12 @@ ADDRESS = CONFIG.get('ADDRESS', 'ADDRESS')
 
 # For gui browser
 chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--headless")
 chrome_options.add_argument('--ignore-certificate-errors')
 chrome_options.add_argument('--ignore-ssl-errors')
 driver = webdriver.Chrome(executable_path='C:/Program Files (x86)/chromedriver.exe', options=chrome_options)
-driver.maximize_window()
+#driver.maximize_window()
 #driver.execute_script("window.scrollTo(0, 4500)") 
-
 
 # Login into Flipkart
 def login_fk():
@@ -45,10 +45,10 @@ def login_fk():
         password_field = driver.find_element_by_xpath(password_field_element_loc)
         email_field.send_keys(EMAIL)
         password_field.send_keys(PASSWORD)
-        print("Details entered✅")
+        print("✅Details entered✅")
         enter = driver.find_element_by_xpath('/html/body/div[3]/div/div/div/div/div[2]/div/form/div[3]/button')
         enter.click()
-        print('Logging in as {}'.format(EMAIL))
+        print('🔓Logging in as {}🔓'.format(EMAIL))
     except:
         print('Login Failed. Retrying.')
         time.sleep(0.1) 
@@ -63,32 +63,32 @@ def add_to_cart_fk():
             time.sleep(0.15)
             driver.execute_script("window.scrollTo(0, 4200)")
             add_to_cart = driver.find_element_by_xpath('//*[@id="container"]/div/div[3]/div[2]/div[1]/div[1]/div[2]/div/ul/li[1]/button')
-            print('Add To Cart button appeared🛒')
+            print('🛒Add To Cart button appeared🛒')
             add_to_cart.click()
             add_to_cart_option = True
         except:
             add_to_cart_option = False
-            text = 'Add To Cart option is unavailable...retrying: ' + time.ctime()
+            text = '🔍Add To Cart option is unavailable...retrying: 🔍 (Time Elapsed: ' + str(time.time()-start_time) + ')'
             print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,128,0, text))
             driver.refresh()
     if add_to_cart_option is True:
-        text = 'Congratulations, Item added to cart cart successfully. Please checkout as soon as possible!'
+        text = '🎉Congratulations, Item added to cart cart successfully. Please checkout as soon as possible!🎉'
         print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(0,255,0, text))
         width = os.get_terminal_size().columns
-        text = '        (Took {} seconds)'.format(time.time()-start_time)
+        text = '        ⏳(Took {} seconds)⌛'.format(time.time()-start_time)
         print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(124,252,0, text).center(width))
 
 # Perform a check if the item is acctually added in the cart
 def check_cart_fk():
     try:
         item = driver.find_element_by_xpath('//*[@id="container"]/div/div[2]/div/div/div[1]/div/div[3]/div/form/button')
-        print("Your item is present in the cart.")
+        print("☑Your item is present in the cart.☑")
     except:
-        print("Unable to find the item in the cart.")
+        print("❌Unable to find the item in the cart.❌")
 
 if WEBSITE == "FLIPKART":
+    print("🔒Logging in...🔒")
     add_to_cart_page_url = URL
-    print("Logging in...")
     driver.get(add_to_cart_page_url)
     login_fk()
 
@@ -102,16 +102,19 @@ if WEBSITE == "FLIPKART":
     add_to_cart_fk()
 
     while True:
-        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,255,0, '1. Check Cart'))
-        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,128,0, '2. Retry add to cart'))
-        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,0,0, '3. Exit Script'))
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(0,0,255, '1. Refresh current page'))
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,255,0, '2. Check Cart'))
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,128,0, '3. Retry add to cart'))
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,0,0, '4. Exit Script'))
         ans = int(input())
         if ans == 1:
-            check_cart_fk()
+            driver.refresh()
         elif ans == 2:
+            check_cart_fk()
+        elif ans == 3:
             driver.get(add_to_cart_page_url)
             add_to_cart_fk()
         else:
             break
 
-print("Exited Script")
+print("🚗Exited Script🚗")
