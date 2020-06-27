@@ -1,42 +1,120 @@
-import urllib3.request
 from selenium import webdriver
+from configparser import ConfigParser
+import time
+import os
 
-# def page_loaded(self):
-#     self.log.info("checking if {} page is loaded.".format(self.driver.current_url))
-#     try:
-#         new_page = browser.find_element_by_tag_name('html')
-#         return new_page.id != old_page.id
-#     except NoSuchElementException:
-#         return False
-#driver = webdriver.Firefox(executable_path='C:/Program Files/geckodriver.exe')
-driver = webdriver.Chrome(executable_path='C:/Program Files (x86)/chromedriver.exe')
-driver.get('https://www.flipkart.com/oppo-a9-2020-marine-green-128-gb/p/itm32799ab1d45b4?pid=MOBFKCS5G9MSXBVF&lid=LSTMOBFKCS5G9MSXBVF83WPUP&otracker=clp_banner_1_8.bannerX3.BANNER_mobiles-big-saving-days-ko7y7ui3-store_VAUZJXIDPAKJ&fm=neo%2Fmerchandising&iid=M_603ac043-370c-40f1-a3d5-4e6bdaabc922_8.VAUZJXIDPAKJ&ssid=3dxp01s5800000001593015914018')
-#button = driver.find_element_by_xpath('//button[contains(text(), "test button")]')
-button = driver.find_element_by_xpath('/html/body/div[1]/div/div[3]/div[2]/div[1]/div[1]/div[2]/div/ul/li[1]/button')
-driver.maximize_window()
-#print(len(button))
-driver.execute_script("window.scrollTo(0, 4500)") 
-# from selenium.webdriver.support.wait import WebDriverWait
-# element = WebDriverWait(driver, 7).until(
-#     lambda x: x.find_element_by_xpath('//[@id="container"]/div/div[3]/div[2]/div[1]/div[1]/div[2]/div/ul/li[1]/button'))
+CONFIG = ConfigParser()
+CONFIG.read('config.ini')
 
-#button = driver.find_element_by_xpath('//[@id="container"]/div/div[3]/div[2]/div[1]/div[1]/div[2]/div/ul/li[1]/button')
-print("loaded")
-button.click()
-# for i in button:
-#     i.click()
+EMAIL = CONFIG.get('LOGIN DETAILS', 'EMAIL')
+PASSWORD = CONFIG.get('LOGIN DETAILS', 'PASSWORD')
+PHONE = CONFIG.get('PAYMENT DETAILS', 'PHONE')
+WEBSITE = CONFIG.get('URL', 'WEBSITE')
+URL = CONFIG.get('URL', 'URL')
+ADDRESS = CONFIG.get('ADDRESS', 'ADDRESS')
 
-# while True:
-#     if page_loaded(driver):    
-#         print("page loaded")
-#         for i in button:
-#             i.click()
-#         break
+# For headless browser
+# chrome_options = webdriver.ChromeOptions()
+# chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+# chrome_options.add_argument("--headless")
+# chrome_options.add_argument("--disable-dev-shm-usage")
+# chrome_options.add_argument("--no-sandbox")
+# chrome_options.add_argument('--ignore-certificate-errors')
+# chrome_options.add_argument('--ignore-ssl-errors')
+# driver = webdriver.Chrome(execute_path=os.environ.get("CHROMEDRIVER_PATH"),
+#     chrome_options=chrome_options)
 
-print('done')
-# weburl = urllib.request.urlopen("https://theopensourceworld.com")
-# #print("result code:", weburl.getcode())
-# html = weburl.read()
-# with open('page.html', 'wb') as f:
-#     f.write(html)
-# print("done")
+
+# For gui browser
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument('--ignore-certificate-errors')
+chrome_options.add_argument('--ignore-ssl-errors')
+driver = webdriver.Chrome(executable_path='C:/Program Files (x86)/chromedriver.exe', options=chrome_options)
+#driver.maximize_window()
+#driver.execute_script("window.scrollTo(0, 4500)") 
+
+# Login into Flipkart
+def login_fk():
+    try:
+        login = driver.find_element_by_xpath('//*[@id="container"]/div/div[1]/div[1]/div[2]/div[3]/div/div/div/a')
+        login.click()
+        email_field_element_loc = '/html/body/div[3]/div/div/div/div/div[2]/div/form/div[1]/input'
+        password_field_element_loc = '/html/body/div[3]/div/div/div/div/div[2]/div/form/div[2]/input'
+        email_field = driver.find_element_by_xpath(email_field_element_loc)
+        password_field = driver.find_element_by_xpath(password_field_element_loc)
+        email_field.send_keys(EMAIL)
+        password_field.send_keys(PASSWORD)
+        print("✅Details entered✅")
+        enter = driver.find_element_by_xpath('/html/body/div[3]/div/div/div/div/div[2]/div/form/div[3]/button')
+        enter.click()
+        print('🔓Logging in as {}🔓'.format(EMAIL))
+    except:
+        print('Login Failed. Retrying.')
+        time.sleep(0.1) 
+        login_fk()
+
+# Adds item to cart for flipkart website
+def add_to_cart_fk():
+    start_time = time.time()
+    add_to_cart_option = False
+    while add_to_cart_option is False:
+        try:
+            time.sleep(0.15)
+            driver.execute_script("window.scrollTo(0, 4200)")
+            add_to_cart = driver.find_element_by_xpath('//*[@id="container"]/div/div[3]/div[2]/div[1]/div[1]/div[2]/div/ul/li[1]/button')
+            print('🛒Add To Cart button appeared🛒')
+            add_to_cart.click()
+            add_to_cart_option = True
+        except:
+            add_to_cart_option = False
+            text = '🔍Add To Cart option is unavailable...retrying: 🔍 (Time Elapsed: ' + str(time.time()-start_time) + ')'
+            print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,128,0, text))
+            driver.refresh()
+    if add_to_cart_option is True:
+        text = '🎉Congratulations, Item added to cart cart successfully. Please checkout as soon as possible!🎉'
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(0,255,0, text))
+        width = os.get_terminal_size().columns
+        text = '        ⏳(Took {} seconds)⌛'.format(time.time()-start_time)
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(124,252,0, text).center(width))
+
+# Perform a check if the item is acctually added in the cart
+def check_cart_fk():
+    try:
+        item = driver.find_element_by_xpath('//*[@id="container"]/div/div[2]/div/div/div[1]/div/div[3]/div/form/button')
+        print("☑Your item is present in the cart.☑")
+    except:
+        print("❌Unable to find the item in the cart.❌")
+
+if WEBSITE == "FLIPKART":
+    print("🔒Logging in...🔒")
+    add_to_cart_page_url = URL
+    driver.get(add_to_cart_page_url)
+    login_fk()
+
+    email_field_element_loc = '/html/body/div[3]/div/div/div/div/div[2]/div/form/div[1]/input'
+    while True:
+        try:
+            driver.find_element_by_xpath(email_field_element_loc)
+        except:
+            break
+
+    add_to_cart_fk()
+
+    while True:
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(0,0,255, '1. Refresh current page'))
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,255,0, '2. Check Cart'))
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,128,0, '3. Retry add to cart'))
+        print("\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(255,0,0, '4. Exit Script'))
+        ans = int(input())
+        if ans == 1:
+            driver.refresh()
+        elif ans == 2:
+            check_cart_fk()
+        elif ans == 3:
+            driver.get(add_to_cart_page_url)
+            add_to_cart_fk()
+        else:
+            break
+
+print("🚗Exited Script🚗")
