@@ -20,5 +20,9 @@ Following are the things you need to run this script:
 5. Done!! 
 
 ## Note
-Currently this script only adds the item to the cart, and the user have to place the rest of the order manually. This feature of auto-order will be add in future.
+Currently this script only adds the item to the cart, and the user have to place the rest of the order manually. This feature of auto-order will be add in future. Also the websites that are supported currently are: 
+1. Flipkart 
 
+Support for more websites coming soon... 
+
+Happy Shopping
